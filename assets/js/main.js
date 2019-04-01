@@ -30,7 +30,10 @@
             .attr("height", height);
 
         // Create the projection
-        var projection = d3.geoHufnagel();
+        var projection = d3.geoEqualEarth()
+            // .rotate([-10, 0])
+            .center([-40,25])
+            .scale(230);
 
         var path = d3.geoPath()
             .projection(projection);
