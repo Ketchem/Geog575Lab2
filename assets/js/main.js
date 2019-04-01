@@ -30,7 +30,7 @@
             .attr("height", height);
 
         // Create the projection
-        var projection = d3.geoCylindricalEqualArea();
+        var projection = d3.geoHufnagel();
 
         var path = d3.geoPath()
             .projection(projection);
