@@ -21,8 +21,8 @@
 
         // Map frame dimensions
         var width = window.innerWidth * 0.66,
-            height = 640;
-            // height = window.innerHeight * .66;
+            //height = 640;
+            height = window.innerHeight * .66;
 
         // Create new svg container for the map
         var map = d3.select("body")
@@ -37,7 +37,8 @@
             .center([-0,0])
             .translate([width / 2, height / 2])
             // .center([-40,25])
-            .scale(225);
+            // .scale(230);
+            .scale(width/5.5);
 
         var path = d3.geoPath()
             .projection(projection);
@@ -140,11 +141,11 @@
     // Create the map color scale
     function makeColorScale(data){
         var colorClasses = [
-            "#D4B9DA",
-            "#C994C7",
-            "#DF65B0",
-            "#DD1C77",
-            "#980043"
+            "#66D6F2",
+            "#00A1C7",
+            "#0086A6",
+            "#00596E",
+            "#002F3B"
         ];
 
         //create color scale generator
@@ -167,7 +168,7 @@
     function choropleth(props, colorScale){
         //make sure attribute value is a number
         var val = parseFloat(props[expressed]);
-        //if attribute value exists, assign a color; otherwise assign gray
+        //if attribute value exists and is  > 0, assign a color; otherwise assign gray
         if (val === 0){
             return "#CCC";
         }
