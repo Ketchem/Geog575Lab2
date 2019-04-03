@@ -17,11 +17,14 @@
         translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
 
     //create a scale to size bars proportionally to frame
-    var yScale = d3.scaleLinear()
-        .range([window.innerHeight * .66, 0])
-        .domain([0, 100]);
+    // var yScale = d3.scaleLinear()
+    //     .range([window.innerHeight * .66, 0])
+    //     .domain([0, 100]);
 
-
+    var yScale = d3.scaleLog()
+        .base(Math.E)
+        .domain([Math.exp(0), Math.exp(9)])
+        .range([chartHeight, 0]);
 
     //begin script when window loads
     window.onload = setMap();
