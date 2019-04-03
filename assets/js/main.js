@@ -7,9 +7,20 @@
     var expressed = attrArray[0];
 
     //chart frame dimensions
-
+    var chartWidth = window.innerWidth * 1,
+        chartHeight = window.innerHeight * .66,
+        leftPadding = 25,
+        rightPadding = 2,
+        topBottomPadding = 5,
+        chartInnerWidth = chartWidth - leftPadding - rightPadding,
+        chartInnerHeight = chartHeight - topBottomPadding * 2,
+        translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
 
     //create a scale to size bars proportionally to frame
+    var yScale = d3.scaleLinear()
+        .range([window.innerHeight * .66, 0])
+        .domain([0, 100]);
+
 
 
     //begin script when window loads
@@ -70,6 +81,7 @@
             // Draw the countries
             setEnumerationUnits(worldCountries, map, path, colorScale);
             // Add chart
+            setChart(csvData, colorScale);
             // Create interface elements
 
         });
@@ -181,6 +193,52 @@
 
     function setChart(csvData, colorScale){
 
+        //create a second svg element to hold the bar chart
+        var chart = d3.select("body")
+            .append("svg")
+            .attr("width", chartWidth)
+            .attr("height", chartHeight)
+            .attr("class", "chart");
+
+
+        //Example 2.4 line 8...set bars for each province
+        var bars = chart.selectAll(".bar")
+            .data(csvData)
+            .enter()
+            .append("rect")
+            .sort(function(a, b){
+                return b[expressed]-a[expressed]
+            })
+            .attr("class", function(d){
+                return "bar " + d.NOC;
+            })
+            .attr("width", chartInnerWidth / csvData.length - 1);
+
+        //set bar positions, heights, and colors
+        updateChart(bars, csvData.length, colorScale);
+
+
+        // Create a text element for the chart title
+        var chartTitle = chart.append("text")
+            .attr("x", 250)
+            .attr("y", 40)
+            .attr("class", "chartTitle")
+            .text("Chart title");
+            // .text("Number of Variable " + expressed[3] + " in each region");
+
+        //create vertical axis generator
+        var axis = chart.append("g")
+            .attr("class", "axis")
+            .attr("transform", translate)
+            .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
+
+
+        //create frame for chart border
+        var chartFrame = chart.append("rect")
+            .attr("class", "chartFrame")
+            .attr("width", chartInnerWidth)
+            .attr("height", chartInnerHeight)
+            .attr("transform", translate);
     };
 
     function changeAttribute(attribute, csvData){
@@ -188,7 +246,24 @@
     };
 
     function updateChart(bars, n, colorScale){
+        //position bars
+        bars.attr("x", function(d, i){
+            return i * (chartInnerWidth / n) + leftPadding;
+        })
+        //size/resize bars
+            .attr("height", function(d, i){
+                return 463 - yScale(parseFloat(d[expressed]));
+            })
+            .attr("y", function(d, i){
+                return yScale(parseFloat(d[expressed])) + topBottomPadding;
+            })
+            //color/recolor bars
+            .style("fill", function(d){
+                return choropleth(d, colorScale);
+            });
 
+        // var chartTitle = d3.select(".chartTitle")
+        //     .text("Number of Variable " + expressed[3] + " in each region");
     };
 
 }) ();
