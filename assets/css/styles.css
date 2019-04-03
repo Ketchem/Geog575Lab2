@@ -50,3 +50,15 @@
     stroke-width: 3px;
     shape-rendering: crispEdges;
 }
+
+.controls{
+    height: 50px;
+    width: auto;
+    margin: 10px auto;
+    /*border: 1px solid black;*/
+    align-content: center;
+}
+
+.dropdown{
+    margin: 17px;
+}

@@ -8,7 +8,8 @@
 
     //chart frame dimensions
     var chartWidth = window.innerWidth * 1 - 100,
-        chartHeight = window.innerHeight * .66,
+        chartHeight = chartWidth * .35,
+        // chartHeight = window.innerHeight * .66,
         leftPadding = 100,
         rightPadding = 2,
         topBottomPadding = 5,
@@ -34,9 +35,9 @@
 
 
         // Map frame dimensions
-        var width = window.innerWidth * 0.95,
-            //height = 640;
-            height = window.innerHeight * .66;
+        var width = window.innerWidth - 100,
+            height = width * .35;
+            //height = window.innerHeight * .66;
 
         // Create new svg container for the map
         var map = d3.select("body")
@@ -52,7 +53,7 @@
             .translate([width / 2, height / 2])
             // .center([-40,25])
             // .scale(230);
-            .scale(width/7.5);
+            .scale((width*2)/15);
 
         var path = d3.geoPath()
             .projection(projection);
@@ -83,10 +84,11 @@
             var colorScale = makeColorScale(csvData);
             // Draw the countries
             setEnumerationUnits(worldCountries, map, path, colorScale);
-            // Add chart
-            setChart(csvData, colorScale);
             // Create interface elements
             createDropdown(csvData);
+            // Add chart
+            setChart(csvData, colorScale);
+
         });
 
     };
@@ -311,8 +313,14 @@
     };
 
     function createDropdown(csvData){
+
+        var controlDiv = d3.select("body")
+            .append("div")
+            .attr("class", "controls")
+
+
         //add select element
-        var dropdown = d3.select("body")
+        var dropdown = d3.select(".controls")
             .append("select")
             .attr("class", "dropdown")
             .on("change", function(){
