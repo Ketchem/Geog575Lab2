@@ -7,13 +7,13 @@
     var expressed = attrArray[0];
 
     //chart frame dimensions
-    var chartWidth = window.innerWidth * 1,
+    var chartWidth = window.innerWidth * 1 - 100,
         chartHeight = window.innerHeight * .66,
-        leftPadding = 25,
+        leftPadding = 100,
         rightPadding = 2,
         topBottomPadding = 5,
         chartInnerWidth = chartWidth - leftPadding - rightPadding,
-        chartInnerHeight = chartHeight - topBottomPadding * 2,
+        chartInnerHeight = chartHeight - (topBottomPadding * 2),
         translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
 
     //create a scale to size bars proportionally to frame
@@ -23,8 +23,8 @@
 
     var yScale = d3.scaleLog()
         .base(Math.E)
-        .domain([Math.exp(0), Math.exp(9)])
-        .range([chartHeight, 0]);
+        .range([chartInnerHeight - (topBottomPadding * 2), 0])
+        .domain([Math.exp(0), Math.exp(9)]);
 
     //begin script when window loads
     window.onload = setMap();
@@ -34,7 +34,7 @@
 
 
         // Map frame dimensions
-        var width = window.innerWidth * 0.66,
+        var width = window.innerWidth * 0.95,
             //height = 640;
             height = window.innerHeight * .66;
 
@@ -52,7 +52,7 @@
             .translate([width / 2, height / 2])
             // .center([-40,25])
             // .scale(230);
-            .scale(width/5.5);
+            .scale(width/7.5);
 
         var path = d3.geoPath()
             .projection(projection);
@@ -86,7 +86,7 @@
             // Add chart
             setChart(csvData, colorScale);
             // Create interface elements
-
+            createDropdown(csvData);
         });
 
     };
@@ -185,7 +185,7 @@
         var val = parseFloat(props[expressed]);
         //if attribute value exists and is  > 0, assign a color; otherwise assign gray
         if (val === 0){
-            return "#CCC";
+            return "#66D6F2";
         }
         else if (typeof val == 'number' && !isNaN(val)){
             return colorScale(val);
@@ -230,7 +230,7 @@
             // .text("Number of Variable " + expressed[3] + " in each region");
 
         //create vertical axis generator
-        var axis = chart.append("g")
+        var yAxis = chart.append("g")
             .attr("class", "axis")
             .attr("transform", translate)
             .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
@@ -244,8 +244,33 @@
             .attr("transform", translate);
     };
 
+    //dropdown change listener handler
     function changeAttribute(attribute, csvData){
+        //change the expressed attribute
+        expressed = attribute;
 
+        //recreate the color scale
+        var colorScale = makeColorScale(csvData);
+
+        var regions = d3.selectAll(".regions")
+            .transition()
+            .duration(1000)
+            .style("fill", function(d){
+                return choropleth(d.properties, colorScale)
+            });
+
+        var bars = d3.selectAll(".bar")
+        //re-sort bars
+            .sort(function(a, b){
+                return b[expressed] - a[expressed];
+            })
+            .transition() //add animation
+            .delay(function(d, i){
+                return i * 20
+            })
+            .duration(500);
+
+        updateChart(bars, csvData.length, colorScale);
     };
 
     function updateChart(bars, n, colorScale){
@@ -255,10 +280,26 @@
         })
         //size/resize bars
             .attr("height", function(d, i){
-                return 463 - yScale(parseFloat(d[expressed]));
+                if (isNaN(chartInnerHeight - yScale(parseFloat(d[expressed]))) ||
+                    chartInnerHeight - yScale(parseFloat(d[expressed])) === Infinity ||
+                    chartInnerHeight - yScale(parseFloat(d[expressed])) === -Infinity){
+                    return 0;
+                }
+                else{
+                    return chartInnerHeight - yScale(parseFloat(d[expressed]));
+                }
+
             })
             .attr("y", function(d, i){
-                return yScale(parseFloat(d[expressed])) + topBottomPadding;
+                if (isNaN(yScale(parseFloat(d[expressed])) + topBottomPadding) ||
+                    yScale(parseFloat(d[expressed])) + topBottomPadding === Infinity ||
+                    yScale(parseFloat(d[expressed])) + topBottomPadding === -Infinity){
+                    return 0;
+                }
+                else{
+                    return yScale(parseFloat(d[expressed])) + topBottomPadding;
+                }
+
             })
             //color/recolor bars
             .style("fill", function(d){
@@ -267,6 +308,30 @@
 
         // var chartTitle = d3.select(".chartTitle")
         //     .text("Number of Variable " + expressed[3] + " in each region");
+    };
+
+    function createDropdown(csvData){
+        //add select element
+        var dropdown = d3.select("body")
+            .append("select")
+            .attr("class", "dropdown")
+            .on("change", function(){
+                changeAttribute(this.value, csvData)
+            });
+
+        //add initial option
+        var titleOption = dropdown.append("option")
+            .attr("class", "titleOption")
+            .attr("disabled", "true")
+            .text("Select Attribute");
+
+        //add attribute name options
+        var attrOptions = dropdown.selectAll("attrOptions")
+            .data(attrArray)
+            .enter()
+            .append("option")
+            .attr("value", function(d){ return d })
+            .text(function(d){ return d });
     };
 
 }) ();
