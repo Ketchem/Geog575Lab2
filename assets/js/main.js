@@ -2,7 +2,7 @@
 (function(){
 
     //variables for data join
-    var attrArray = ["TotalNumberMedals","TotalGold","GoldSummer","GoldWinter","TotalSilver","SilverSummer",
+    var attrArray = ["TotalNumberOfMedals","TotalSummerMedals", "TotalWinterMedals","TotalGold","GoldSummer","GoldWinter","TotalSilver","SilverSummer",
         "SilverWinter", "TotalBronze","BronzeSummer", "BronzeWinter"];
     var expressed = attrArray[0];
 
