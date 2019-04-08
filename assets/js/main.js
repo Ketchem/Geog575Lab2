@@ -86,9 +86,11 @@
             setEnumerationUnits(worldCountries, map, path, colorScale);
             // Create interface elements
             createDropdown(csvData);
+            // createLegend();
             // Add chart
             setChart(csvData, colorScale);
 
+            setRegionsFunctions();
         });
 
     };
@@ -141,12 +143,17 @@
 
     // Set the variable
     function setEnumerationUnits(worldCountries, map, path, colorScale){
+
         var regions = map.selectAll(".regions")
             .data(worldCountries)
             .enter()
             .append("path")
             .attr("class", function(d){
-                return "regions " + d.properties.NOC;
+                // console.log(d);
+                return "regions " + d.properties.ADMIN;
+            })
+            .attr("id", function(d){
+                return d.properties.ADM0_A3;
             })
             .attr("d", path)
             .style("fill", function(d){
@@ -215,6 +222,7 @@
                 return b[expressed]-a[expressed]
             })
             .attr("class", function(d){
+                // console.log(d);
                 return "bar " + d.NOC;
             })
             .attr("width", chartInnerWidth / csvData.length - 1);
@@ -225,10 +233,10 @@
 
         // Create a text element for the chart title
         var chartTitle = chart.append("text")
-            .attr("x", 250)
+            .attr("x", chartInnerWidth/2)
             .attr("y", 40)
             .attr("class", "chartTitle")
-            .text("Chart title");
+            .text("Number of Medals By Country");
             // .text("Number of Variable " + expressed[3] + " in each region");
 
         //create vertical axis generator
@@ -340,6 +348,24 @@
             .append("option")
             .attr("value", function(d){ return d })
             .text(function(d){ return d });
+    };
+
+    // Set the functionality of the elements
+    function setRegionsFunctions(){
+        // Highlights the country plus the corresponding bar on hover
+        $(".regions").mouseover(function(){
+            $(this).css("stroke","#f1f442");
+            var id = $(this).attr("id");
+            $("." + id).css({
+                "stroke":"#f1f442",
+                "stroke-width": "2px"
+            });
+        });
+        $(".regions").mouseout(function(){
+            $(this).css("stroke","#000000");
+            var id = $(this).attr("id");
+            $("." + id).css("stroke","none");
+        });
     };
 
 }) ();

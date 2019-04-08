@@ -7,8 +7,8 @@
     stroke: black;
 }
 
-
 .map{
+
     /*width: 75%;*/
     /*height: 100%;*/
     /*float: right;*/
@@ -61,4 +61,9 @@
 
 .dropdown{
     margin: 17px;
+}
+
+h1{
+    margin: 10px auto;
+    text-align: center;
 }
