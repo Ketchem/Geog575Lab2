@@ -1,41 +1,39 @@
 // Anonymous function to keep all variables local
 (function(){
 
-    //variables for data join
+    // Set array of attributes from the CSV to join to
     var attrArray = ["TotalNumberOfMedals","TotalSummerMedals", "TotalWinterMedals","TotalGold","GoldSummer","GoldWinter","TotalSilver","SilverSummer",
         "SilverWinter", "TotalBronze","BronzeSummer", "BronzeWinter"];
+    // Set the default attribute to be displayed
     var expressed = attrArray[0];
 
-    //chart frame dimensions
-    var chartWidth = window.innerWidth * 1 - 100,
+    // Create variables for the Chart Dimensions
+    var chartWidth = window.innerWidth * 1 - 40,
         chartHeight = chartWidth * .35,
-        // chartHeight = window.innerHeight * .66,
-        leftPadding = 100,
+        leftPadding = 40,
         rightPadding = 2,
         topBottomPadding = 5,
         chartInnerWidth = chartWidth - leftPadding - rightPadding,
         chartInnerHeight = chartHeight - (topBottomPadding * 2),
         translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
 
-    //create a scale to size bars proportionally to frame
-    // var yScale = d3.scaleLinear()
-    //     .range([window.innerHeight * .66, 0])
-    //     .domain([0, 100]);
-
+    // Create the scale for the Y axis
+    // Using Log Scale to show values from 1 - 5637
     var yScale = d3.scaleLog()
         .base(Math.E)
         .range([chartInnerHeight - (topBottomPadding * 2), 0])
         .domain([Math.exp(0), Math.exp(9)]);
+        // .tickFormat(function(d){return d});
 
-    //begin script when window loads
+    // Setup the map after the window loads
     window.onload = setMap();
+
 
     // Setup the map
     function setMap(){
 
-
         // Map frame dimensions
-        var width = window.innerWidth - 100,
+        var width = window.innerWidth - 40,
             height = width * .35;
             //height = window.innerHeight * .66;
 
@@ -55,6 +53,7 @@
             // .scale(230);
             .scale((width*2)/15);
 
+        // Set the projection
         var path = d3.geoPath()
             .projection(projection);
 
@@ -79,22 +78,21 @@
 
             // Join data together
             worldCountries = joinData(worldCountries.features, csvData);
-            // console.log(worldCountries);
             // Create the color scale
             var colorScale = makeColorScale(csvData);
             // Draw the countries
             setEnumerationUnits(worldCountries, map, path, colorScale);
             // Create interface elements
             createDropdown(csvData);
-            // createLegend();
+            // TODO createLegend();
             // Add chart
             setChart(csvData, colorScale);
 
-            setRegionsFunctions();
         });
 
     };
 
+    // Add the Graticule and map background
     function setGraticule(map, path){
         var graticule = d3.geoGraticule()
             .step([10, 10]);
@@ -141,7 +139,7 @@
         return worldCountries;
     };
 
-    // Set the variable
+    // Draw the countries/regions
     function setEnumerationUnits(worldCountries, map, path, colorScale){
 
         var regions = map.selectAll(".regions")
@@ -159,7 +157,6 @@
             .style("fill", function(d){
                 return choropleth(d.properties, colorScale);
             });
-
     };
 
     // Create the map color scale
@@ -189,6 +186,7 @@
         return colorScale;
     };
 
+    // Appropriately Color the Map
     function choropleth(props, colorScale){
         //make sure attribute value is a number
         var val = parseFloat(props[expressed]);
@@ -203,6 +201,7 @@
         };
     };
 
+    // Create the chart
     function setChart(csvData, colorScale){
 
         //create a second svg element to hold the bar chart
@@ -228,7 +227,7 @@
             .attr("width", chartInnerWidth / csvData.length - 1);
 
         //set bar positions, heights, and colors
-        updateChart(bars, csvData.length, colorScale);
+        updateChart(bars, csvData.length, colorScale, chart, csvData);
 
 
         // Create a text element for the chart title
@@ -252,6 +251,32 @@
             .attr("width", chartInnerWidth)
             .attr("height", chartInnerHeight)
             .attr("transform", translate);
+
+        //annotate bars with attribute value text
+        var numbers = chart.selectAll(".numbers")
+            .data(csvData)
+            .enter()
+            .append("text")
+            .sort(function(a, b){
+                return b[expressed]-a[expressed]
+            })
+            .attr("class", function(d){
+                return "numbers " + d.NOC.toUpperCase();
+            })
+            .attr("text-anchor", "right")
+            .attr("x", function(d, i){
+                var fraction = chartInnerWidth/ csvData.length;
+                return (i * fraction + (fraction - 1) / 2) + 40;
+            })
+            .attr("y", function(d){
+                return yScale(parseFloat(d[expressed]));
+            })
+            .text(function(d){
+                return d[expressed];
+            });
+
+        // Rewrite the scale to whole numbers
+        adjustTicks();
     };
 
     //dropdown change listener handler
@@ -280,10 +305,19 @@
             })
             .duration(500);
 
-        updateChart(bars, csvData.length, colorScale);
+        var numbers = d3.selectAll(".numbers")
+            .sort(function(a, b){
+            return b[expressed]-a[expressed]
+            })
+            .text(function(d){
+                return d[expressed];
+            });
+
+        updateChart(bars, csvData.length, colorScale, numbers);
     };
 
-    function updateChart(bars, n, colorScale){
+    // Change the chart attributes when a user changes the dropdown value
+    function updateChart(bars, n, colorScale, numbers){
         //position bars
         bars.attr("x", function(d, i){
             return i * (chartInnerWidth / n) + leftPadding;
@@ -316,16 +350,28 @@
                 return choropleth(d, colorScale);
             });
 
+        // Add the number label to the chart (initially hidden)
+        //TODO Fix Numbers Y position
+        numbers.attr("x", function(d, i){
+            var fraction = chartInnerWidth/ n;
+            return (i * fraction + (fraction - 1) / 2) + 40;
+            });
+            // .attr("y", function(d){
+            //     return yScale(parseFloat(d[expressed]));
+            // });
+
+        setRegionsFunctions();
+
         // var chartTitle = d3.select(".chartTitle")
         //     .text("Number of Variable " + expressed[3] + " in each region");
     };
 
+    // Create the dropdown for the user
     function createDropdown(csvData){
 
         var controlDiv = d3.select("body")
             .append("div")
             .attr("class", "controls")
-
 
         //add select element
         var dropdown = d3.select(".controls")
@@ -348,24 +394,54 @@
             .append("option")
             .attr("value", function(d){ return d })
             .text(function(d){ return d });
+
+        var popup = d3.select(".controls")
+            .append("div")
+            .attr("class", "popup");
     };
 
     // Set the functionality of the elements
+    // TODO Add event listeners to the bars as well
     function setRegionsFunctions(){
-        // Highlights the country plus the corresponding bar on hover
-        $(".regions").mouseover(function(){
-            $(this).css("stroke","#f1f442");
-            var id = $(this).attr("id");
-            $("." + id).css({
-                "stroke":"#f1f442",
-                "stroke-width": "2px"
-            });
-        });
-        $(".regions").mouseout(function(){
-            $(this).css("stroke","#000000");
-            var id = $(this).attr("id");
-            $("." + id).css("stroke","none");
-        });
+
+        var popup = d3.selectAll(".popup");
+
+        var regions = d3.selectAll(".regions")
+            .on("mouseover", highlight)
+            .on("mouseout",  unhighlight);
+
+        function highlight(d) {
+            var centroid = d3.geoCentroid(d);
+            // console.log(centroid);
+            var label = d.properties.ADMIN;
+            var noc = d.properties.ADM0_A3;
+            // console.log(label);
+            popup.html(label)
+                .attr("left", chartInnerWidth.toString())
+                .attr("top", "60");
+            $("."+ noc).addClass("highlighted");
+            $("#"+ noc).addClass("highlighted");
+        };
+
+        function unhighlight(d){
+            var noc = d.properties.ADM0_A3;
+            $("."+ noc).removeClass("highlighted");
+            $("#"+ noc).removeClass("highlighted");
+            popup.html("");
+        };
     };
+
+    // Adjust the Y scale ticks to whole values
+    function adjustTicks(){
+        $(".tick text").each(function(){
+            var roundedNumber = $(this).text();
+            console.log(roundedNumber);
+            roundedNumber = Math.round(parseFloat(roundedNumber.replace(/,/g, '')));
+            $(this).text(roundedNumber);
+        })
+    };
+
+
+
 
 }) ();

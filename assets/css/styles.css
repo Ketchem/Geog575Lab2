@@ -55,8 +55,8 @@
     height: 50px;
     width: auto;
     margin: 10px auto;
-    /*border: 1px solid black;*/
-    align-content: center;
+    justify-items: center;
+    text-align: center;
 }
 
 .dropdown{
@@ -66,4 +66,45 @@
 h1{
     margin: 10px auto;
     text-align: center;
+    color: #66D6F2;
+}
+h6{
+     margin: 0 auto 5px auto;
+     text-align: center;
+     color: #CCCCCC;
+     font-weight: normal;
+ }
+
+.numbers{
+    color: #000;
+    fill: #000;
+    visibility: hidden;
+}
+
+.bar.highlighted{
+    stroke-width: 2px;
+    stroke: #f1f442;
+}
+
+.regions.highlighted{
+    stroke-width: 2px;
+    stroke: #f1f442;
+}
+
+.numbers.highlighted{
+    fill: #000;
+    visibility: visible;
+}
+
+.popup{
+    display: inline-block;
+    margin: 0 auto;
+    width: 225px;
+    color: #66D6F2;
+}
+
+body{
+    background: #283048;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to top, #859398, #283048);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to top, #859398, #283048); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
